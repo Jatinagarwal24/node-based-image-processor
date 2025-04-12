@@ -4,6 +4,7 @@
 #include "ColorChannelSplitterNode.h"
 #include "BlurNode.h"
 #include "BlendNode.h"
+#include "ThresholdNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -26,7 +27,7 @@ static ImageInputNode imageInputNode;
 static BrightnessContrastNode brightnessContrastNode;
 static ColorChannelSplitterNode colorChannelSplitterNode(brightnessContrastNode);
 static BlurNode blurNode;
-// static ThresholdNode thresholdNode;
+static ThresholdNode thresholdNode; //
 // static EdgeDetectionNode edgeDetectionNode;
 static BlendNode blendNode;
 static OutputNode outputNode;
@@ -130,39 +131,49 @@ void renderUI() {
     if (ImGui::Button("Output Node")) {
         selectedNode = &outputNode;
     }
+    if (ImGui::Button("Threshold Node")) {
+        selectedNode = &thresholdNode;
+    }
     ImGui::End();
 
     // Connect the pipeline
-   // Connect the pipeline
     if (!imageInputNode.getOutputImage().empty()) {
         brightnessContrastNode.setInputImage(imageInputNode.getOutputImage());
         if (brightnessContrastNode.dirty) {
             brightnessContrastNode.process();
         }
-
+    
         if (!brightnessContrastNode.getOutputImage().empty()) {
             colorChannelSplitterNode.setInputImage(brightnessContrastNode.getOutputImage());
             if (colorChannelSplitterNode.dirty) {
                 colorChannelSplitterNode.process();
             }
-
+    
             if (!colorChannelSplitterNode.getOutputImage().empty()) {
                 blurNode.setInputImage(colorChannelSplitterNode.getOutputImage());
                 if (blurNode.dirty) {
                     blurNode.process();
                 }
-
+    
                 if (!blurNode.getOutputImage().empty()) {
                     // BlendNode: blend blurred output with original input image
                     blendNode.setBlendImage(blurNode.getOutputImage(), imageInputNode.getOutputImage());
                     if (blendNode.dirty) {
                         blendNode.process();
                     }
-
+                    
                     if (!blendNode.getOutputImage().empty()) {
-                        outputNode.setInputImage(blendNode.getOutputImage());
-                        if (outputNode.dirty) {
-                            outputNode.process();
+                        // Threshold Node: process the blended output
+                        thresholdNode.setInputImage(blendNode.getOutputImage());
+                        if (thresholdNode.dirty) {
+                            thresholdNode.process();
+                        }
+                        
+                        if (!thresholdNode.getOutputImage().empty()) {
+                            outputNode.setInputImage(thresholdNode.getOutputImage());
+                            if (outputNode.dirty) {
+                                outputNode.process();
+                            }
                         }
                     }
                 }
