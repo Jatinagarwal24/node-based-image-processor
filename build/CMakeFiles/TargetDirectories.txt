@@ -1,0 +1,4 @@
+/C/Users/jatin/node-image-processor/build/CMakeFiles/imgui.dir
+/C/Users/jatin/node-image-processor/build/CMakeFiles/NodeImageProcessor.dir
+/C/Users/jatin/node-image-processor/build/CMakeFiles/edit_cache.dir
+/C/Users/jatin/node-image-processor/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/C/Users/jatin/node-image-processor/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
