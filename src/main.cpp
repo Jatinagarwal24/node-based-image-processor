@@ -3,6 +3,7 @@
 #include "OutputNode.h"
 #include "ColorChannelSplitterNode.h"
 #include "BlurNode.h"
+#include "BlendNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -27,7 +28,7 @@ static ColorChannelSplitterNode colorChannelSplitterNode(brightnessContrastNode)
 static BlurNode blurNode;
 // static ThresholdNode thresholdNode;
 // static EdgeDetectionNode edgeDetectionNode;
-// static BlendNode blendNode;
+static BlendNode blendNode;
 static OutputNode outputNode;
 
 // Global variables
@@ -122,22 +123,17 @@ void renderUI() {
     if (ImGui::Button("Blur Node")) {
         selectedNode = &blurNode;
     }
-    // Uncomment these if you have implementations for them
-    // if (ImGui::Button("Threshold Node")) {
-    //     selectedNode = &thresholdNode;
-    // }
-    // if (ImGui::Button("Edge Detection Node")) {
-    //     selectedNode = &edgeDetectionNode;
-    // }
-    // if (ImGui::Button("Blend Node")) {
-    //     selectedNode = &blendNode;
-    // }
+
+    if (ImGui::Button("Blend Node")) {
+        selectedNode = &blendNode;
+    }
     if (ImGui::Button("Output Node")) {
         selectedNode = &outputNode;
     }
     ImGui::End();
 
     // Connect the pipeline
+   // Connect the pipeline
     if (!imageInputNode.getOutputImage().empty()) {
         brightnessContrastNode.setInputImage(imageInputNode.getOutputImage());
         if (brightnessContrastNode.dirty) {
@@ -155,15 +151,25 @@ void renderUI() {
                 if (blurNode.dirty) {
                     blurNode.process();
                 }
+
                 if (!blurNode.getOutputImage().empty()) {
-                    outputNode.setInputImage(blurNode.getOutputImage());
-                    if (outputNode.dirty) {
-                        outputNode.process();
+                    // BlendNode: blend blurred output with original input image
+                    blendNode.setBlendImage(blurNode.getOutputImage(), imageInputNode.getOutputImage());
+                    if (blendNode.dirty) {
+                        blendNode.process();
+                    }
+
+                    if (!blendNode.getOutputImage().empty()) {
+                        outputNode.setInputImage(blendNode.getOutputImage());
+                        if (outputNode.dirty) {
+                            outputNode.process();
+                        }
                     }
                 }
             }
         }
     }
+
 
     // Properties Window
     ImGui::Begin("Properties");
