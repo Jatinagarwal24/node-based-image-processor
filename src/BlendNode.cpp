@@ -4,7 +4,7 @@
 #include <iostream>
 
 BlendNode::BlendNode()
-    : NodeBase("Blend Node"), blendMode(BlendMode::Normal), opacity(0.5f)
+    : NodeBase("Blend Node"), blendMode(BlendMode::Normal), opacity(0.5f), processed(false)
 {
 }
 
@@ -19,37 +19,39 @@ const cv::Mat& BlendNode::getOutputImage() const {
 }
 
 void BlendNode::process() {
-    // Only process if dirty is true (optional, based on your design)
+    // Only process when dirty is true
     if (!dirty)
         return;
-
+        
     if (inputImage.empty() || blendImage.empty()) {
         std::cerr << "BlendNode::process(): One or both input images are empty." << std::endl;
         return;
     }
-
+    
     cv::Mat imgA, imgB;
     inputImage.copyTo(imgA);
-    // Ensure the blend image is resized to match imgA, if needed
+    
+    // Ensure the blend image is resized to match imgA if needed
     if (inputImage.size() != blendImage.size())
         cv::resize(blendImage, imgB, inputImage.size());
     else
         blendImage.copyTo(imgB);
-
-    // If types differ, convert blend image to input image's type
+    
+    // Convert blend image to the same type if different
     if (imgA.type() != imgB.type()) {
         imgB.convertTo(imgB, imgA.type());
     }
-
+    
+    // Perform blending based on the selected blend mode
     switch (blendMode) {
         case BlendMode::Normal:
             cv::addWeighted(imgA, opacity, imgB, 1.0f - opacity, 0.0, outputImage);
             break;
-
+            
         case BlendMode::Multiply:
             cv::multiply(imgA, imgB, outputImage, opacity / 255.0);
             break;
-
+            
         case BlendMode::Screen: {
             cv::Mat invA, invB, blended;
             cv::subtract(cv::Scalar::all(255), imgA, invA);
@@ -59,7 +61,7 @@ void BlendNode::process() {
             cv::addWeighted(imgA, 1.0f - opacity, blended, opacity, 0.0, outputImage);
             break;
         }
-
+        
         case BlendMode::Overlay: {
             outputImage = imgA.clone();
             for (int y = 0; y < imgA.rows; y++) {
@@ -77,45 +79,40 @@ void BlendNode::process() {
             }
             break;
         }
-
+        
         case BlendMode::Difference:
             cv::absdiff(imgA, imgB, outputImage);
             break;
+        
+        default:
+            std::cerr << "BlendNode::process(): Unknown blend mode!" << std::endl;
+            break;
     }
-
+    
+    processed = true;
     dirty = false;  // Processing complete
 }
 
 void BlendNode::drawUI() {
     ImGui::Text("Blend Node");
 
-    // Combo box for selecting blend mode
     const char* modes[] = { "Normal", "Multiply", "Screen", "Overlay", "Difference" };
     int currentMode = static_cast<int>(blendMode);
     bool changed = false;
+    
     if (ImGui::Combo("Blend Mode", &currentMode, modes, IM_ARRAYSIZE(modes))) {
         blendMode = static_cast<BlendMode>(currentMode);
         changed = true;
     }
 
-    // Slider for adjusting opacity
     if (ImGui::SliderFloat("Opacity", &opacity, 0.0f, 1.0f)) {
         changed = true;
     }
 
-    // If changes were made, mark dirty so that process() gets called in the pipeline.
     if (changed) {
         dirty = true;
     }
 
-    // Optionally, you can add an "Apply" button. But if you want automatic updates,
-    // you may call process() externally, e.g., in your render loop if dirty is set.
-    if (dirty && ImGui::Button("Apply Blend")) {
-        process();
-        dirty = false;
-    }
-
-    // Display status message
     if (!outputImage.empty()) {
         ImGui::Text("Output image ready.");
     } else {
