@@ -1,6 +1,7 @@
 #include "ImageInputNode.h"
 #include "BrightnessContrastNode.h"
 #include "OutputNode.h"
+#include "ColorChannelSplitterNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -20,6 +21,7 @@ void renderUI();
 // Global node declarations
 static ImageInputNode imageInputNode;
 static BrightnessContrastNode brightnessContrastNode;
+static ColorChannelSplitterNode colorChannelSplitterNode(brightnessContrastNode);
 static OutputNode outputNode;
 
 // Global variables
@@ -113,6 +115,9 @@ void renderUI() {
     if (ImGui::Button("Brightness/Contrast Node")) {
         selectedNode = &brightnessContrastNode;
     }
+    if (ImGui::Button("Color Channel Splitter Node")) {
+        selectedNode = &colorChannelSplitterNode;
+    }
     if (ImGui::Button("Output Node")) {
         selectedNode = &outputNode;
     }
@@ -123,6 +128,7 @@ void renderUI() {
     ImGui::Text("Pipeline:");
     ImGui::BulletText("Image Input Node");
     ImGui::BulletText("Brightness/Contrast Node");
+    ImGui::BulletText("Color Channel Splitter Node");
     ImGui::BulletText("Output Node");
     ImGui::End();
 
@@ -138,11 +144,21 @@ void renderUI() {
     
         // Pass the output of BrightnessContrastNode to ColorChannelSplitterNode
         if (!brightnessContrastNode.getOutputImage().empty()) {
-            outputNode.setInputImage(brightnessContrastNode.getOutputImage());
+            colorChannelSplitterNode.setInputImage(brightnessContrastNode.getOutputImage());
+    
+            // Process ColorChannelSplitterNode if dirty
+            if (colorChannelSplitterNode.dirty) {
+                colorChannelSplitterNode.process();
+            }
+    
+            // Pass the output of ColorChannelSplitterNode to OutputNode
+            if (!colorChannelSplitterNode.getOutputImage().empty()) {
+                outputNode.setInputImage(colorChannelSplitterNode.getOutputImage());
     
                 // Process OutputNode if dirty
-            if (outputNode.dirty) {
-                outputNode.process();
+                if (outputNode.dirty) {
+                    outputNode.process();
+                }
             }
         }
     }
