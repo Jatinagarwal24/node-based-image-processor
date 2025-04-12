@@ -1,5 +1,6 @@
 #include "ImageInputNode.h"
-=#include "OutputNode.h"
+#include "BrightnessContrastNode.h"
+#include "OutputNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -18,6 +19,7 @@ void renderUI();
 
 // Global node declarations
 static ImageInputNode imageInputNode;
+static BrightnessContrastNode brightnessContrastNode;
 static OutputNode outputNode;
 
 // Global variables
@@ -108,6 +110,9 @@ void renderUI() {
     if (ImGui::Button("Image Input Node")) {
         selectedNode = &imageInputNode;
     }
+    if (ImGui::Button("Brightness/Contrast Node")) {
+        selectedNode = &brightnessContrastNode;
+    }
     if (ImGui::Button("Output Node")) {
         selectedNode = &outputNode;
     }
@@ -117,15 +122,61 @@ void renderUI() {
     ImGui::Begin("Node Canvas");
     ImGui::Text("Pipeline:");
     ImGui::BulletText("Image Input Node");
+    ImGui::BulletText("Brightness/Contrast Node");
     ImGui::BulletText("Output Node");
     ImGui::End();
 
+    // Connect the pipeline
+    if (!imageInputNode.getOutputImage().empty()) {
+        // Pass the output of ImageInputNode to BrightnessContrastNode
+        brightnessContrastNode.setInputImage(imageInputNode.getOutputImage());
+    
+        // Process BrightnessContrastNode if dirty
+        if (brightnessContrastNode.dirty) {
+            brightnessContrastNode.process();
+        }
+    
+        // Pass the output of BrightnessContrastNode to ColorChannelSplitterNode
+        if (!brightnessContrastNode.getOutputImage().empty()) {
+            outputNode.setInputImage(brightnessContrastNode.getOutputImage());
+    
+                // Process OutputNode if dirty
+            if (outputNode.dirty) {
+                outputNode.process();
+            }
+        }
+    }
     // Properties Window
     ImGui::Begin("Properties");
     if (selectedNode) {
         selectedNode->drawUI(); // Display the selected node's properties
     } else {
         ImGui::Text("No node selected.");
+    }
+    ImGui::End();
+
+    // Preview Window
+    ImGui::Begin("Preview");
+    if (!outputNode.getOutputImage().empty()) {
+        cv::Mat resizedPreview;
+      
+        float previewWidth = 300.0f;
+        float scale = previewWidth / outputNode.getOutputImage().cols;
+        cv::resize(outputNode.getOutputImage(), resizedPreview, cv::Size(), scale, scale);
+        std::cout << "Preview image channels: " << resizedPreview.channels() << std::endl;
+        if (resizedPreview.channels() == 1) {
+            cv::cvtColor(resizedPreview, resizedPreview, cv::COLOR_GRAY2RGBA);
+        } else if (resizedPreview.channels() == 3) {
+            cv::cvtColor(resizedPreview, resizedPreview, cv::COLOR_BGR2RGBA);
+        } else if (resizedPreview.channels() == 4) {
+            // Already RGBA, no conversion needed
+        }
+        
+        GLuint textureId = 0;
+        textureId = OpenGLHelper::cvMatToTexture(resizedPreview, textureId);
+        ImGui::Image((ImTextureID)(uintptr_t)textureId, ImVec2(resizedPreview.cols, resizedPreview.rows));
+    } else {
+        ImGui::Text("No output image available.");
     }
     ImGui::End();
 
