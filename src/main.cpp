@@ -1,4 +1,5 @@
 #include "ImageInputNode.h"
+=#include "OutputNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -17,6 +18,7 @@ void renderUI();
 
 // Global node declarations
 static ImageInputNode imageInputNode;
+static OutputNode outputNode;
 
 // Global variables
 GLFWwindow* window = nullptr;
@@ -106,12 +108,16 @@ void renderUI() {
     if (ImGui::Button("Image Input Node")) {
         selectedNode = &imageInputNode;
     }
+    if (ImGui::Button("Output Node")) {
+        selectedNode = &outputNode;
+    }
     ImGui::End();
 
     // Node Canvas Window
     ImGui::Begin("Node Canvas");
     ImGui::Text("Pipeline:");
     ImGui::BulletText("Image Input Node");
+    ImGui::BulletText("Output Node");
     ImGui::End();
 
     // Properties Window
