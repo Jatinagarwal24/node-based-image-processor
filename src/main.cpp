@@ -2,6 +2,7 @@
 #include "BrightnessContrastNode.h"
 #include "OutputNode.h"
 #include "ColorChannelSplitterNode.h"
+#include "BlurNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -10,8 +11,9 @@
 #include <imgui_impl_opengl3.h>
 #include "OpenGLHelper.h"
 #include "NodeBase.h"
-#include <string>   
-#include "tinyfiledialogs.h" 
+#include <string>
+#include "tinyfiledialogs.h"
+
 // Function declarations
 void initGLFW();
 void initImGui();
@@ -22,6 +24,10 @@ void renderUI();
 static ImageInputNode imageInputNode;
 static BrightnessContrastNode brightnessContrastNode;
 static ColorChannelSplitterNode colorChannelSplitterNode(brightnessContrastNode);
+static BlurNode blurNode;
+// static ThresholdNode thresholdNode;
+// static EdgeDetectionNode edgeDetectionNode;
+// static BlendNode blendNode;
 static OutputNode outputNode;
 
 // Global variables
@@ -79,6 +85,7 @@ void shutdownImGui() {
 }
 
 void renderUI() {
+    // Start the frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -87,20 +94,14 @@ void renderUI() {
     ImGui::Begin("File Operations");
     if (ImGui::Button("Open Image")) {
         const char* filters[] = { "*.jpg", "*.png", "*.bmp" };
-        const char* filePath = tinyfd_openFileDialog(
-            "Select an Image", "", 3, filters, "Image Files (*.jpg, *.png, *.bmp)", 0
-        );
-
+        const char* filePath = tinyfd_openFileDialog("Select an Image", "", 3, filters, "Image Files (*.jpg, *.png, *.bmp)", 0);
         if (filePath) {
             imageInputNode.loadImage(filePath);
             selectedNode = &imageInputNode; // Automatically select the input node
         }
     }
     if (ImGui::Button("Save Image")) {
-        const char* savePath = tinyfd_saveFileDialog(
-            "Save Image", "output.jpg", 0, nullptr, "Image Files (*.jpg, *.png, *.bmp)"
-        );
-
+        const char* savePath = tinyfd_saveFileDialog("Save Image", "output.jpg", 0, nullptr, "Image Files (*.jpg, *.png, *.bmp)");
         if (savePath) {
             outputNode.saveImage(savePath);
         }
@@ -118,50 +119,52 @@ void renderUI() {
     if (ImGui::Button("Color Channel Splitter Node")) {
         selectedNode = &colorChannelSplitterNode;
     }
+    if (ImGui::Button("Blur Node")) {
+        selectedNode = &blurNode;
+    }
+    // Uncomment these if you have implementations for them
+    // if (ImGui::Button("Threshold Node")) {
+    //     selectedNode = &thresholdNode;
+    // }
+    // if (ImGui::Button("Edge Detection Node")) {
+    //     selectedNode = &edgeDetectionNode;
+    // }
+    // if (ImGui::Button("Blend Node")) {
+    //     selectedNode = &blendNode;
+    // }
     if (ImGui::Button("Output Node")) {
         selectedNode = &outputNode;
     }
     ImGui::End();
 
-    // Node Canvas Window
-    ImGui::Begin("Node Canvas");
-    ImGui::Text("Pipeline:");
-    ImGui::BulletText("Image Input Node");
-    ImGui::BulletText("Brightness/Contrast Node");
-    ImGui::BulletText("Color Channel Splitter Node");
-    ImGui::BulletText("Output Node");
-    ImGui::End();
-
     // Connect the pipeline
     if (!imageInputNode.getOutputImage().empty()) {
-        // Pass the output of ImageInputNode to BrightnessContrastNode
         brightnessContrastNode.setInputImage(imageInputNode.getOutputImage());
-    
-        // Process BrightnessContrastNode if dirty
         if (brightnessContrastNode.dirty) {
             brightnessContrastNode.process();
         }
-    
-        // Pass the output of BrightnessContrastNode to ColorChannelSplitterNode
+
         if (!brightnessContrastNode.getOutputImage().empty()) {
             colorChannelSplitterNode.setInputImage(brightnessContrastNode.getOutputImage());
-    
-            // Process ColorChannelSplitterNode if dirty
             if (colorChannelSplitterNode.dirty) {
                 colorChannelSplitterNode.process();
             }
-    
-            // Pass the output of ColorChannelSplitterNode to OutputNode
+
             if (!colorChannelSplitterNode.getOutputImage().empty()) {
-                outputNode.setInputImage(colorChannelSplitterNode.getOutputImage());
-    
-                // Process OutputNode if dirty
-                if (outputNode.dirty) {
-                    outputNode.process();
+                blurNode.setInputImage(colorChannelSplitterNode.getOutputImage());
+                if (blurNode.dirty) {
+                    blurNode.process();
+                }
+                if (!blurNode.getOutputImage().empty()) {
+                    outputNode.setInputImage(blurNode.getOutputImage());
+                    if (outputNode.dirty) {
+                        outputNode.process();
+                    }
                 }
             }
         }
     }
+
     // Properties Window
     ImGui::Begin("Properties");
     if (selectedNode) {
@@ -175,19 +178,14 @@ void renderUI() {
     ImGui::Begin("Preview");
     if (!outputNode.getOutputImage().empty()) {
         cv::Mat resizedPreview;
-      
         float previewWidth = 300.0f;
         float scale = previewWidth / outputNode.getOutputImage().cols;
         cv::resize(outputNode.getOutputImage(), resizedPreview, cv::Size(), scale, scale);
-        std::cout << "Preview image channels: " << resizedPreview.channels() << std::endl;
         if (resizedPreview.channels() == 1) {
             cv::cvtColor(resizedPreview, resizedPreview, cv::COLOR_GRAY2RGBA);
         } else if (resizedPreview.channels() == 3) {
             cv::cvtColor(resizedPreview, resizedPreview, cv::COLOR_BGR2RGBA);
-        } else if (resizedPreview.channels() == 4) {
-            // Already RGBA, no conversion needed
         }
-        
         GLuint textureId = 0;
         textureId = OpenGLHelper::cvMatToTexture(resizedPreview, textureId);
         ImGui::Image((ImTextureID)(uintptr_t)textureId, ImVec2(resizedPreview.cols, resizedPreview.rows));
@@ -196,7 +194,7 @@ void renderUI() {
     }
     ImGui::End();
 
-    // Render ImGui
+    // End the frame and render
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
