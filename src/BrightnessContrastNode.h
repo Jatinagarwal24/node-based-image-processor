@@ -15,7 +15,11 @@ public:
 
     void setInputImage(const cv::Mat& image);
     const cv::Mat& getOutputImage() const;
-   
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        brightness = 0.0f;
+        contrast = 1.0f;
+    }
 
 private:
     float brightness;  

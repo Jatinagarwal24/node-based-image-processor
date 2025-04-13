@@ -2,7 +2,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
-#include "debugUtils.h"
+// #include "debugUtils.h"
 
 BrightnessContrastNode::BrightnessContrastNode()
     : NodeBase("BrightnessContrast"), brightness(0.0f), contrast(1.0f), processed(false) {}
@@ -22,7 +22,7 @@ void BrightnessContrastNode::process() {
     std::cout << "BrightnessContrastNode::process():" << std::endl;
     std::cout << "  Output image size: " << outputImage.cols << " x " << outputImage.rows << std::endl;
     std::cout << "  Pixel value range: " << minVal << " to " << maxVal << std::endl;
-    debugImage(outputImage, "BrightnessContrastNode");
+    // debugImage(outputImage, "BrightnessContrastNode");
 }
 
 void BrightnessContrastNode::setInputImage(const cv::Mat& image) {
@@ -53,5 +53,7 @@ void BrightnessContrastNode::drawUI() {
     if (changed) {
         dirty = true;  // Mark dirty if user changes sliders
     }
-
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
 }
