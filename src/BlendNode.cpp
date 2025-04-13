@@ -4,7 +4,11 @@
 #include <iostream>
 
 BlendNode::BlendNode()
-    : NodeBase("Blend Node"), blendMode(BlendMode::Normal), opacity(0.5f), processed(false)
+    : NodeBase("Blend Node"),
+      blendMode(BlendMode::Normal),
+      opacity(0.5f),
+      useBlend(false),     // Default set to false; original image is used if blending is not enabled.
+      processed(false)
 {
 }
 
@@ -22,9 +26,25 @@ void BlendNode::process() {
     // Only process when dirty is true
     if (!dirty)
         return;
-        
-    if (inputImage.empty() || blendImage.empty()) {
-        std::cerr << "BlendNode::process(): One or both input images are empty." << std::endl;
+    
+    if (inputImage.empty()) {
+        std::cerr << "BlendNode::process(): Primary input image is empty." << std::endl;
+        dirty = false;
+        return;
+    }
+    
+    // If blending is not enabled, output the original image.
+    if (!useBlend) {
+        outputImage = inputImage.clone();
+        dirty = false;
+        return;
+    }
+    
+    if (blendImage.empty()) {
+        std::cerr << "BlendNode::process(): Blend image is empty." << std::endl;
+        // If blend image is missing, pass through the original image.
+        outputImage = inputImage.clone();
+        dirty = false;
         return;
     }
     
@@ -61,7 +81,7 @@ void BlendNode::process() {
             cv::addWeighted(imgA, 1.0f - opacity, blended, opacity, 0.0, outputImage);
             break;
         }
-        
+            
         case BlendMode::Overlay: {
             outputImage = imgA.clone();
             for (int y = 0; y < imgA.rows; y++) {
@@ -79,7 +99,7 @@ void BlendNode::process() {
             }
             break;
         }
-        
+            
         case BlendMode::Difference:
             cv::absdiff(imgA, imgB, outputImage);
             break;
@@ -96,10 +116,13 @@ void BlendNode::process() {
 void BlendNode::drawUI() {
     ImGui::Text("Blend Node");
 
-    const char* modes[] = { "Normal", "Multiply", "Screen", "Overlay", "Difference" };
-    int currentMode = static_cast<int>(blendMode);
     bool changed = false;
     
+    // Checkbox for enabling blending
+    changed |= ImGui::Checkbox("Enable Blending", &useBlend);
+    
+    const char* modes[] = { "Normal", "Multiply", "Screen", "Overlay", "Difference" };
+    int currentMode = static_cast<int>(blendMode);
     if (ImGui::Combo("Blend Mode", &currentMode, modes, IM_ARRAYSIZE(modes))) {
         blendMode = static_cast<BlendMode>(currentMode);
         changed = true;
