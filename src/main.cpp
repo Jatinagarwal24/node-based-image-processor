@@ -7,7 +7,8 @@
 #include "ThresholdNode.h"
 #include "EdgeDetectionNode.h"
 #include "NoiseGenerationNode.h"
-#include <opencv2/opencv.hpp>
+#include "ConvolutionFilterNode.h"
+#include <opencv2/opencv.hpp> 
 #include <imgui.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -34,6 +35,7 @@ static EdgeDetectionNode edgeDetectionNode;
 static BlendNode blendNode;
 static OutputNode outputNode;
 static NoiseGenerationNode noiseGenerationNode;
+static ConvolutionFilterNode convolutionFilterNode; // New node for convolution filter
 
 // Global variables
 GLFWwindow* window = nullptr;
@@ -143,6 +145,9 @@ void renderUI() {
     if (ImGui::Button("Noise Generation Node")) {
         selectedNode = &noiseGenerationNode;
     }
+    if (ImGui::Button("Convolution Filter Node")) {
+        selectedNode = &convolutionFilterNode;
+    }
     ImGui::End();
 
     // Connect the pipeline
@@ -193,10 +198,18 @@ void renderUI() {
                                 }
                                 
                                 if (!edgeDetectionNode.getOutputImage().empty()) {
-                                    // Output Node: display the final edge detection result
-                                    outputNode.setInputImage(edgeDetectionNode.getOutputImage());
-                                    if (outputNode.dirty) {
-                                        outputNode.process();
+                                    // Convolution Filter Node: process the edge-detected output
+                                    convolutionFilterNode.setInputImage(edgeDetectionNode.getOutputImage());
+                                    if (convolutionFilterNode.dirty) {
+                                        convolutionFilterNode.process();
+                                    }
+                                    
+                                    if (!convolutionFilterNode.getOutputImage().empty()) {
+                                        // Output Node: display the final result
+                                        outputNode.setInputImage(convolutionFilterNode.getOutputImage());
+                                        if (outputNode.dirty) {
+                                            outputNode.process();
+                                        }
                                     }
                                 }
                             }
