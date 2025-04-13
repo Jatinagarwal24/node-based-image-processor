@@ -17,6 +17,15 @@ class ThresholdNode : public NodeBase {
         const cv::Mat& getOutputImage() const ;
         void process() override;
         void drawUI() override;
+        void reset() override {
+            NodeBase::reset(); // Call base class reset
+            useThreshold = false;
+            thresholdValue = 128;
+            adaptiveBlockSize = 11;
+            adaptiveC = 2;
+            computedOtsuThresh = 0.0;
+            dirty= true; // Mark as dirty
+        }
     
     private:
         bool useThreshold;

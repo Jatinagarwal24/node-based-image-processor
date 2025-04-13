@@ -141,4 +141,7 @@ void BlendNode::drawUI() {
     } else {
         ImGui::Text("No output image.");
     }
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
 }

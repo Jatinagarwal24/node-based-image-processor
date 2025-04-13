@@ -34,4 +34,12 @@ public:
 
     // Utility function to update customKernel based on selected preset and kernel size
     void updateKernelPreset();
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        useFilter = false; // Reset filter to disabled state
+        kernelSize = 3;    // Default to 3x3 kernel
+        kernelPreset = KernelPreset::Sharpen; // Default preset
+        customKernel.assign(9, 0.0f); // Initialize for a 3x3 kernel
+        updateKernelPreset(); // Update the kernel based on the default preset
+    }
 };

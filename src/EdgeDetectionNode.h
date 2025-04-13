@@ -13,6 +13,14 @@ public:
     const cv::Mat& getOutputImage() const;
     void process() override;
     void drawUI() override;
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        overlayEdges = true;
+        method = EdgeMethod::Sobel;
+        sobelKernelSize = 1;
+        cannyThreshold1 = 100;
+        cannyThreshold2 = 200;
+    }
 
 private:
     cv::Mat inputImage;

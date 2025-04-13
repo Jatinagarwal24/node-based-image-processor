@@ -176,4 +176,7 @@ void ConvolutionFilterNode::drawUI() {
         // Note: Typically, here you would convert outputImage to a texture and display it.
         // This framework-specific code is assumed to be handled elsewhere in your system.
     }
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
 }

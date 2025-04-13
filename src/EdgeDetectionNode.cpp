@@ -91,4 +91,7 @@ void EdgeDetectionNode::drawUI() {
     if (dirty) {
         process();
     }
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
 }

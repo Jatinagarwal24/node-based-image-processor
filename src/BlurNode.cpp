@@ -81,4 +81,7 @@ void BlurNode::drawUI() {
     }
 
     ImGui::Text("%s", getOutputImage().empty() ? "No output image." : "Output image ready.");
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
 }
