@@ -11,42 +11,59 @@ void ImageInputNode::process() {
     outputImage = inputImage.clone();
 }
 
+
 // void ImageInputNode::drawUI() {
 //     ImGui::Text("Image Input Node");
+
 //     if (!inputImage.empty()) {
 //         ImGui::Text("Image loaded successfully.");
-//         GLuint textureID = 0;
-//         // Convert the cv::Mat to an OpenGL texture using cvMatToTexture
-//         textureID = cvMatToTexture(inputImage, textureID);
+
+//         // Only create texture if not already created
+//         if (textureID == 0) {
+//             OpenGLHelper::cvMatToTexture(inputImage, textureID);
+//         }
+
 //         if (textureID != 0) {
-//             // Convert textureID to ImTextureID via uintptr_t
 //             ImTextureID texID = (ImTextureID)(uintptr_t)textureID;
 //             ImGui::Image(texID, ImVec2(static_cast<float>(inputImage.cols), static_cast<float>(inputImage.rows)));
-//             glDeleteTextures(1, &textureID);  // Clean up the texture after use
 //         }
 //     } else {
 //         ImGui::Text("No image loaded.");
+
+//         // Clean up texture if image is cleared
+//         if (textureID != 0) {
+//             glDeleteTextures(1, &textureID);
+//             textureID = 0;
+//         }
 //     }
 // }
+
 void ImageInputNode::drawUI() {
     ImGui::Text("Image Input Node");
 
     if (!inputImage.empty()) {
         ImGui::Text("Image loaded successfully.");
 
-        // Only create texture if not already created
-        if (textureID == 0) {
-            OpenGLHelper::cvMatToTexture(inputImage, textureID);
+        // Regenerate texture if image was marked as dirty
+        if (dirty) {
+            if (textureID != 0) {
+                glDeleteTextures(1, &textureID); // Delete old texture
+                textureID = 0;
+            }
+            OpenGLHelper::cvMatToTexture(inputImage, textureID); // Generate new texture
+            dirty = false;
         }
 
         if (textureID != 0) {
             ImTextureID texID = (ImTextureID)(uintptr_t)textureID;
-            ImGui::Image(texID, ImVec2(static_cast<float>(inputImage.cols), static_cast<float>(inputImage.rows)));
+            float maxWidth = 200.0f; // Optional: scale to fit UI
+            float scale = std::min(maxWidth / inputImage.cols, 1.0f);
+            ImVec2 imageSize(inputImage.cols * scale, inputImage.rows * scale);
+            ImGui::Image(texID, imageSize);
         }
     } else {
         ImGui::Text("No image loaded.");
 
-        // Clean up texture if image is cleared
         if (textureID != 0) {
             glDeleteTextures(1, &textureID);
             textureID = 0;
