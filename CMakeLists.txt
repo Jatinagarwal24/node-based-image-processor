@@ -44,14 +44,16 @@ file(GLOB_RECURSE APP_SOURCES
     src/*.h
     nodes/*.cpp
     nodes/*.h
-    src/tinyfiledialogs.c # Add tinyfiledialogs.c explicitly
 )
 
-# Create the main executable target first
-add_executable(NodeImageProcessor ${APP_SOURCES})
+# Create the main executable target
+add_executable(NodeImageProcessor
+    ${APP_SOURCES}
+    src/tinyfiledialogs.c # Ensure tinyfiledialogs.c is included
+)
 
 # Now set compile definitions for the NodeImageProcessor target
-target_compile_definitions(NodeImageProcessor PRIVATE IMGUI_INCLUDE_IMCONFIG_H)
+target_compile_definitions(NodeImageProcessor PRIVATE IMGUI_INCLUDE_IMCONFIG_H _CRT_SECURE_NO_WARNINGS)
 
 # --- Include directories for targets ---
 target_include_directories(imgui PUBLIC
@@ -85,5 +87,4 @@ target_link_libraries(NodeImageProcessor
     ole32
     comdlg32
     oleaut32
-
 )
