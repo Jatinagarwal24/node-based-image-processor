@@ -32,6 +32,16 @@ public:
     bool showGreen = true; // Default to true
     bool showBlue = true;  // Default to true
     bool dirty = false;
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        showRed = true;
+        showGreen = true;
+        showBlue = true;
+        redChannel.release();
+        greenChannel.release();
+        blueChannel.release();
+    }
+
 
     BrightnessContrastNode* brightnessContrastNode = nullptr; // Pointer to the connected node
 };

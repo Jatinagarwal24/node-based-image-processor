@@ -11,7 +11,7 @@ void ColorChannelSplitterNode::process() {
         cv::split(inputImage, channels);
     
         if (channels.size() >= 3) {
-            std::cout << "ColorChannelSplitterNode::process(): Splitting channels" << std::endl;
+            // std::cout << "ColorChannelSplitterNode::process(): Splitting channels" << std::endl;
             redChannel = channels[2];
             greenChannel = channels[1];
             blueChannel = channels[0];
@@ -50,4 +50,8 @@ void ColorChannelSplitterNode::drawUI() {
     } else {
         ImGui::Text("Output image is ready.");
     }
+    if (ImGui::Button("Reset")) {
+        reset(); // Call the reset method
+    }
+
 }
