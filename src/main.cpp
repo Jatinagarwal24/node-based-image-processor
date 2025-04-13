@@ -6,6 +6,7 @@
 #include "BlendNode.h"
 #include "ThresholdNode.h"
 #include "EdgeDetectionNode.h"
+#include "NoiseGenerationNode.h"
 #include <opencv2/opencv.hpp>
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -32,6 +33,7 @@ static ThresholdNode thresholdNode; //
 static EdgeDetectionNode edgeDetectionNode;
 static BlendNode blendNode;
 static OutputNode outputNode;
+static NoiseGenerationNode noiseGenerationNode;
 
 // Global variables
 GLFWwindow* window = nullptr;
@@ -138,6 +140,9 @@ void renderUI() {
     if (ImGui::Button("Edge Detection Node")) {
         selectedNode = &edgeDetectionNode;
     }
+    if (ImGui::Button("Noise Generation Node")) {
+        selectedNode = &noiseGenerationNode;
+    }
     ImGui::End();
 
     // Connect the pipeline
@@ -146,45 +151,53 @@ void renderUI() {
         if (brightnessContrastNode.dirty) {
             brightnessContrastNode.process();
         }
-    
+        
         if (!brightnessContrastNode.getOutputImage().empty()) {
             colorChannelSplitterNode.setInputImage(brightnessContrastNode.getOutputImage());
             if (colorChannelSplitterNode.dirty) {
                 colorChannelSplitterNode.process();
             }
-    
+            
             if (!colorChannelSplitterNode.getOutputImage().empty()) {
                 blurNode.setInputImage(colorChannelSplitterNode.getOutputImage());
                 if (blurNode.dirty) {
                     blurNode.process();
                 }
-    
+                
                 if (!blurNode.getOutputImage().empty()) {
                     // BlendNode: blend blurred output with original input image
                     blendNode.setBlendImage(blurNode.getOutputImage(), imageInputNode.getOutputImage());
                     if (blendNode.dirty) {
                         blendNode.process();
                     }
-    
+                    
                     if (!blendNode.getOutputImage().empty()) {
                         // Threshold Node: process the blended output
                         thresholdNode.setInputImage(blendNode.getOutputImage());
                         if (thresholdNode.dirty) {
                             thresholdNode.process();
                         }
-    
+                        
                         if (!thresholdNode.getOutputImage().empty()) {
-                            // Edge Detection Node: process the thresholded output
-                            edgeDetectionNode.setInputImage(thresholdNode.getOutputImage());
-                            if (edgeDetectionNode.dirty) {
-                                edgeDetectionNode.process();
+                            // Noise Generation Node: add noise to the thresholded output
+                            noiseGenerationNode.setInputImage(thresholdNode.getOutputImage());
+                            if (noiseGenerationNode.dirty) {
+                                noiseGenerationNode.process();
                             }
-    
-                            if (!edgeDetectionNode.getOutputImage().empty()) {
-                                // Output Node: display the final edge detection result
-                                outputNode.setInputImage(edgeDetectionNode.getOutputImage());
-                                if (outputNode.dirty) {
-                                    outputNode.process();
+                            
+                            if (!noiseGenerationNode.getOutputImage().empty()) {
+                                // Edge Detection Node: process the noisy output
+                                edgeDetectionNode.setInputImage(noiseGenerationNode.getOutputImage());
+                                if (edgeDetectionNode.dirty) {
+                                    edgeDetectionNode.process();
+                                }
+                                
+                                if (!edgeDetectionNode.getOutputImage().empty()) {
+                                    // Output Node: display the final edge detection result
+                                    outputNode.setInputImage(edgeDetectionNode.getOutputImage());
+                                    if (outputNode.dirty) {
+                                        outputNode.process();
+                                    }
                                 }
                             }
                         }
@@ -193,7 +206,6 @@ void renderUI() {
             }
         }
     }
-
     // Properties Window
     ImGui::Begin("Properties");
     if (selectedNode) {
