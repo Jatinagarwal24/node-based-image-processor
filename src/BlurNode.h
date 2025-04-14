@@ -11,7 +11,13 @@ public:
     const cv::Mat& getOutputImage() const ;
     void process() override;
     void drawUI() override;
-
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        blurRadius = 5; // Default radius
+        uniformBlur = true; // Default to uniform blur
+        directionHorizontal = true; // Default to horizontal direction
+        useBlurNode = false; // Default to disabled
+    }
 private:
     int blurRadius;
     bool uniformBlur;

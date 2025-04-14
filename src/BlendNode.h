@@ -20,7 +20,12 @@ public:
     // Set the two input images (A and B)
     void setBlendImage(const cv::Mat& imageA, const cv::Mat& imageB);
     const cv::Mat& getOutputImage() const;
-
+    void reset() override {
+        NodeBase::reset(); // Call base class reset
+        blendMode = BlendMode::Normal; // Default blend mode
+        opacity = 0.5f; // Default opacity
+        useBlend = false; // Default to no blending
+    }
 
 private:
     cv::Mat inputImage;    // Primary image
