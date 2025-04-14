@@ -502,54 +502,6 @@ src/ImageInputNode.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/ImageInputNode.cpp.s
 .PHONY : src/ImageInputNode.cpp.s
 
-src/InvertColorsNode.o: src/InvertColorsNode.cpp.o
-.PHONY : src/InvertColorsNode.o
-
-# target to build an object file
-src/InvertColorsNode.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/InvertColorsNode.cpp.o
-.PHONY : src/InvertColorsNode.cpp.o
-
-src/InvertColorsNode.i: src/InvertColorsNode.cpp.i
-.PHONY : src/InvertColorsNode.i
-
-# target to preprocess a source file
-src/InvertColorsNode.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/InvertColorsNode.cpp.i
-.PHONY : src/InvertColorsNode.cpp.i
-
-src/InvertColorsNode.s: src/InvertColorsNode.cpp.s
-.PHONY : src/InvertColorsNode.s
-
-# target to generate assembly for a file
-src/InvertColorsNode.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/InvertColorsNode.cpp.s
-.PHONY : src/InvertColorsNode.cpp.s
-
-src/NodeBase.o: src/NodeBase.cpp.o
-.PHONY : src/NodeBase.o
-
-# target to build an object file
-src/NodeBase.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/NodeBase.cpp.o
-.PHONY : src/NodeBase.cpp.o
-
-src/NodeBase.i: src/NodeBase.cpp.i
-.PHONY : src/NodeBase.i
-
-# target to preprocess a source file
-src/NodeBase.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/NodeBase.cpp.i
-.PHONY : src/NodeBase.cpp.i
-
-src/NodeBase.s: src/NodeBase.cpp.s
-.PHONY : src/NodeBase.s
-
-# target to generate assembly for a file
-src/NodeBase.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/NodeImageProcessor.dir/build.make CMakeFiles/NodeImageProcessor.dir/src/NodeBase.cpp.s
-.PHONY : src/NodeBase.cpp.s
-
 src/NoiseGenerationNode.o: src/NoiseGenerationNode.cpp.o
 .PHONY : src/NoiseGenerationNode.o
 
@@ -725,12 +677,6 @@ help:
 	@echo "... src/ImageInputNode.o"
 	@echo "... src/ImageInputNode.i"
 	@echo "... src/ImageInputNode.s"
-	@echo "... src/InvertColorsNode.o"
-	@echo "... src/InvertColorsNode.i"
-	@echo "... src/InvertColorsNode.s"
-	@echo "... src/NodeBase.o"
-	@echo "... src/NodeBase.i"
-	@echo "... src/NodeBase.s"
 	@echo "... src/NoiseGenerationNode.o"
 	@echo "... src/NoiseGenerationNode.i"
 	@echo "... src/NoiseGenerationNode.s"
