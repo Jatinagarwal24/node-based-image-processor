@@ -64,9 +64,18 @@ void ThresholdNode::process() {
         }
     }
 
-    // Histogram generation
+    // Histogram generation - now based on output image if thresholding is applied
     {
-        cv::Mat histSource = grayInput.empty() ? colorInput.clone() : grayInput.clone();
+        cv::Mat histSource;
+
+        if (useThreshold && !outputImage.empty()) {
+            histSource = outputImage.clone();
+        } else if (!grayInput.empty()) {
+            histSource = grayInput.clone();
+        } else {
+            histSource = colorInput.clone();
+        }
+
         if (!histSource.empty() && histSource.channels() == 3) {
             cv::cvtColor(histSource, histSource, cv::COLOR_BGR2GRAY);
         }
@@ -86,7 +95,9 @@ void ThresholdNode::process() {
     dirty = false;
 }
 
+
 void ThresholdNode::drawUI() {
+    
     ImGui::Text("Threshold Node");
     bool changed = false;
 
@@ -111,10 +122,12 @@ void ThresholdNode::drawUI() {
         changed |= ImGui::SliderInt("C Value", &adaptiveC, -20, 20);
     }
 
-    if (changed) dirty = true;
+    if (changed) {
+        dirty = true ;
+        process();
+    };
 
-    if (dirty) process();
-
+    
     if (!histogramData.empty()) {
         ImGui::Text("Histogram:");
         float maxVal = *std::max_element(histogramData.begin(), histogramData.end());
