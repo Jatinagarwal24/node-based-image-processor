@@ -4,18 +4,6 @@
 #include <cmath>
 #include <random>
 
-NoiseGenerationNode::NoiseGenerationNode()
-    : NodeBase("Noise Generation Node"),
-      useNoise(false),                       // Default: noise disabled; show input image
-      noiseType(NoiseType::Perlin),
-      outputMode(NoiseOutputMode::Color),
-      scale(0.05f),
-      octaves(3),
-      persistence(0.5f),
-      width(512),
-      height(512)
-{
-}
 
 void NoiseGenerationNode::setInputImage(const cv::Mat& image) {
     inputImage = image.clone(); // Used if displacement is needed, or for passing through
@@ -78,7 +66,7 @@ void NoiseGenerationNode::drawUI() {
 
     // Checkbox to enable or disable noise generation
     changed |= ImGui::Checkbox("Enable Noise", &useNoise);
-
+    
     // Noise type selection
     const char* types[] = { "Perlin", "Simplex", "Worley" };
     int noiseIdx = static_cast<int>(noiseType);
