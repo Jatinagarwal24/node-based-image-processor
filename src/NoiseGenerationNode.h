@@ -2,30 +2,17 @@
 #include "NodeBase.h"
 #include <opencv2/core.hpp>
 
-// Enum to specify different types of noise
 enum class NoiseType { Perlin, Simplex, Worley };
-
-// Enum to specify different output modes for the noise (Color or Displacement)
 enum class NoiseOutputMode { Color, Displacement };
 
 class NoiseGenerationNode : public NodeBase {
 public:
-    // Constructor to initialize default values
     NoiseGenerationNode();
 
-    // Function to set the input image
     void setInputImage(const cv::Mat& image);
-    
-    // Function to get the output image
-    const cv::Mat& getOutputImage() const;
-    
-    // Function to process the noise generation
+    const cv::Mat& getOutputImage() const ;
     void process() override;
-    
-    // Function to draw the UI controls for the node
     void drawUI() override;
-    
-    // Reset the node's parameters to default
     void reset() override {
         NodeBase::reset();
         useNoise = false; // Reset to default state
@@ -38,26 +25,20 @@ public:
         height = 512; // Default height
     }
 
-    // Public member variables (as per your request)
-    cv::Mat outputImage;      // Output image after processing
-    cv::Mat inputImage;       // Input image for processing or displacement
+    // All members are public per your earlier request
+    cv::Mat outputImage;
+    cv::Mat inputImage;
 
-    bool useNoise;            // Flag to toggle noise generation (if false, passes input image)
-    
-    // Noise type (Perlin, Simplex, or Worley)
-    NoiseType noiseType;      
-    
-    // Output mode (Color output or Displacement map)
+    bool useNoise;  // New toggle flag: if false, passes input image through
+
+    NoiseType noiseType;
     NoiseOutputMode outputMode;
-    
-    // Parameters for noise generation
-    float scale;              // Scale factor for noise
-    int octaves;              // Number of octaves for Perlin-like noise
-    float persistence;        // Persistence (influence of each octave)
-    int width;                // Width of the generated noise image
-    int height;               // Height of the generated noise image
 
-private:
-    // Helper function to generate noise value based on Perlin-like function
-    float generateNoiseValue(float x, float y);
+    float scale;
+    int octaves;
+    float persistence;
+    int width;
+    int height;
+
+    float generateNoiseValue(float x, float y); // Simulated Perlin-style noise
 };
